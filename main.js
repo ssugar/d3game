@@ -24,8 +24,8 @@ var userContainer = document.createElement("custom");
 var userCircleCont = d3.select(userContainer);
 
 function addNewCircle(){
-    var randomX = d3.randomUniform(50,790)();
-    var randomY = d3.randomUniform(50, 590)();
+    var randomX = d3.randomUniform(150,790)();
+    var randomY = d3.randomUniform(150, 590)();
     var circleItem = circleContainer.append("circle")
         .attr("class", "circleNode")
         .attr("cx", randomX)
@@ -108,8 +108,8 @@ function detectCollision(d3timer, elapsed){
     })        
     for(i = 0; i < userX.length; i++) {
         for(h = 0; h < currentX.length; h++) {
-            if(userX[i] > (currentX[h] - currentRadius[h] - userRadius[i]/2) && userX[i] < (currentX[h] + currentRadius[h] + userRadius[i]/2)){
-                if(userY[i] > (currentY[h] - currentRadius[h] - userRadius[i]/2) && userY[i] < (currentY[h] + currentRadius[h] + userRadius[i]/2)){
+            if(userX[i] > (currentX[h] - currentRadius[h] - userRadius[i]/1.5) && userX[i] < (currentX[h] + currentRadius[h] + userRadius[i]/1.5)){
+                if(userY[i] > (currentY[h] - currentRadius[h] - userRadius[i]/1.5) && userY[i] < (currentY[h] + currentRadius[h] + userRadius[i]/1.5)){
                     var numFormatter = d3.format(".1f");
                     alert('Collision detected at pos: ' + userX[i] + ', ' + userY[i] + ' with circle ' + h + ' at: ' + currentX[h] + ', ' + currentY[h] + ' after ' + moveNumber + ' direction changes and ' + numFormatter(elapsed/1000) + ' seconds.  You lose.');
                     setTransitionOffCanvas();
