@@ -133,6 +133,7 @@ function setTransition(){
             var randomR = d3.randomUniform(10, 80)();
             node.transition()
             .duration(transitionObjectInterval)
+            .ease("bounce")
             .attr("cx", randomX)
             .attr("cy", randomY)
             .attr("r", randomR)
