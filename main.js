@@ -3,13 +3,12 @@ var canvasHeight = 600;
 var canvasMargin = 10;
 
 var gameOver = 0;
+var moveNumber = 0;
 
 var redrawCanvasInterval = 50;
 var transitionObjectInterval = 5000;
 var takeAction = 0;
 var takeActionThreshold = 250;
-
-var moveNumber = 0;
 
 var canvas = d3.select("body").append("canvas")
     .attr("id", "main-canvas")
@@ -43,7 +42,7 @@ for(i = 0; i < 10; i++)
 var userItem = circleContainer.append("circle")
     .attr("class", "userCircleNode")
     .attr("id", "userCircle")
-    .attr("r", 120)
+    .attr("r", 100)
     .attr("fill", "black");
 
 var circleBinding = circleContainer.selectAll(".circleNode");
