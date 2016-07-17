@@ -23,8 +23,8 @@ var userContainer = document.createElement("custom");
 var userCircleCont = d3.select(userContainer);
 
 function addNewCircle(){
-    var randomX =  (Math.random() * (canvasWidth - canvasMargin*2)) + canvasMargin;
-    var randomY =  (Math.random() * (canvasHeight - canvasMargin*2)) + canvasMargin;
+    var randomX =  ((Math.random() * canvasWidth) - canvasMargin);
+    var randomY =  ((Math.random() * canvasHeight) - canvasMargin);
     var circleItem = circleContainer.append("circle")
         .attr("class", "circleNode")
         .attr("cx", randomX)
@@ -111,8 +111,8 @@ function setTransition(){
     if(takeAction == takeActionThreshold) {
         circleBinding.each(function(d) {
             var node = d3.select(this);
-            var randomX =  (Math.random() * (canvasWidth - canvasMargin*2)) + canvasMargin;
-            var randomY =  (Math.random() * (canvasHeight - canvasMargin*2)) + canvasMargin;
+            var randomX =  ((Math.random() * canvasWidth) - canvasMargin);
+            var randomY =  ((Math.random() * canvasHeight) - canvasMargin);
             node.transition()
             .duration(transitionObjectInterval)
             .ease("linear")
