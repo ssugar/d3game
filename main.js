@@ -79,6 +79,7 @@ function setTransitionOffCanvas(){
         .duration(100)
         .attr("cx", 800)
         .attr("cy", 600)
+        .attr("r", 40)
         .attr("fill", randomColor);
     });
 }
@@ -129,10 +130,12 @@ function setTransition(){
             var node = d3.select(this);
             var randomX = d3.randomUniform(0, 790)();
             var randomY = d3.randomUniform(0, 590)();
+            var randomR = d3.randomUniform(10, 80)();
             node.transition()
             .duration(transitionObjectInterval)
             .attr("cx", randomX)
             .attr("cy", randomY)
+            .attr("r", randomR)
             .attr("fill", randomColor);
         });
         moveNumber = moveNumber + 1;
