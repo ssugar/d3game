@@ -2,10 +2,12 @@ var canvasWidth = 800;
 var canvasHeight = 600;
 var canvasMargin = 10;
 
+var gameOver = 0;
+
 var redrawCanvasInterval = 50;
 var transitionObjectInterval = 5000;
 var takeAction = 0;
-var takeActionThreshold = transitionObjectInterval / redrawCanvasInterval;
+var takeActionThreshold = 250;
 
 var moveNumber = 0;
 
@@ -23,17 +25,17 @@ var userContainer = document.createElement("custom");
 var userCircleCont = d3.select(userContainer);
 
 function addNewCircle(){
-    var randomX =  ((Math.random() * canvasWidth) - canvasMargin);
-    var randomY =  ((Math.random() * canvasHeight) - canvasMargin);
+    var randomX = d3.randomUniform(50,790)();
+    var randomY = d3.randomUniform(50, 590)();
     var circleItem = circleContainer.append("circle")
         .attr("class", "circleNode")
         .attr("cx", randomX)
         .attr("cy", randomY)
-        .attr("r", 30)
+        .attr("r", 40)
         .attr("fill", randomColor);
 }
 
-for(i = 0; i < 20; i++)
+for(i = 0; i < 10; i++)
 {
     addNewCircle();
 }
@@ -41,7 +43,7 @@ for(i = 0; i < 20; i++)
 var userItem = circleContainer.append("circle")
     .attr("class", "userCircleNode")
     .attr("id", "userCircle")
-    .attr("r", 30)
+    .attr("r", 120)
     .attr("fill", "black");
 
 var circleBinding = circleContainer.selectAll(".circleNode");
@@ -71,7 +73,18 @@ function clearCanvas(context){
     context.clearRect(0, 0, canvasWidth, canvasHeight);
 }
 
-function detectCollision(d3timer){
+function setTransitionOffCanvas(){
+    circleBinding.each(function(d) {
+        var node = d3.select(this);
+        node.transition()
+        .duration(100)
+        .attr("cx", 800)
+        .attr("cy", 600)
+        .attr("fill", randomColor);
+    });
+}
+
+function detectCollision(d3timer, elapsed){
     var currentX = [];
     var currentY = [];
     var currentColor = [];
@@ -98,7 +111,10 @@ function detectCollision(d3timer){
         for(h = 0; h < currentX.length; h++) {
             if(userX[i] > (currentX[h] - currentRadius[h] - userRadius[i]/2) && userX[i] < (currentX[h] + currentRadius[h] + userRadius[i]/2)){
                 if(userY[i] > (currentY[h] - currentRadius[h] - userRadius[i]/2) && userY[i] < (currentY[h] + currentRadius[h] + userRadius[i]/2)){
-                    alert('Collision detected at pos: ' + userX[i] + ', ' + userY[i] + ' with circle ' + h + ' at: ' + currentX[h] + ', ' + currentY[h] + ' after ' + moveNumber + ' direction changes.  You lose.');
+                    var numFormatter = d3.format(".1f");
+                    alert('Collision detected at pos: ' + userX[i] + ', ' + userY[i] + ' with circle ' + h + ' at: ' + currentX[h] + ', ' + currentY[h] + ' after ' + moveNumber + ' direction changes and ' + numFormatter(elapsed/1000) + ' seconds.  You lose.');
+                    setTransitionOffCanvas();
+                    gameOver = 1;
                     d3timer.stop();
                     return true;
                 }
@@ -107,15 +123,15 @@ function detectCollision(d3timer){
     }
 }
 
+
 function setTransition(){
     if(takeAction == takeActionThreshold) {
         circleBinding.each(function(d) {
             var node = d3.select(this);
-            var randomX =  ((Math.random() * canvasWidth) - canvasMargin);
-            var randomY =  ((Math.random() * canvasHeight) - canvasMargin);
+            var randomX = d3.randomUniform(0, 790)();
+            var randomY = d3.randomUniform(0, 590)();
             node.transition()
             .duration(transitionObjectInterval)
-            .ease("linear")
             .attr("cx", randomX)
             .attr("cy", randomY)
             .attr("fill", randomColor);
@@ -128,12 +144,16 @@ function setTransition(){
     }
 }
 
-var d3timer = d3.timer(function(elapsed) {
-    clearCanvas(context)
-    setTransition();
-    detectCollision(d3timer);
-    drawCanvas(circleBinding, context);
-}, redrawCanvasInterval);
+function runTimer(){
+    var d3timer = d3.timer(function(elapsed) {
+        clearCanvas(context)
+        setTransition();
+        detectCollision(d3timer, elapsed);
+        drawCanvas(circleBinding, context);
+    }, redrawCanvasInterval);
+}
+
+runTimer();
 
 d3.select("#main-canvas")
     .on("touchstart", touchStart)
@@ -144,6 +164,10 @@ d3.select("#main-canvas")
 function touchStart() {
   d3.event.preventDefault();
   var d = d3.touches(this);
+  if(gameOver == 1) { 
+      runTimer();
+      gameOver = 0;
+  }
   userBinding.each(function() {
     var node = d3.select(this);
     node.attr("cx", +(d[0])[0]);
@@ -163,5 +187,5 @@ function touchMove() {
 
 function touchEnd() {
   d3.event.preventDefault();
-  alert("You stopped touching me.  You lose");
+  //alert("Game Paused.  Close this and Touch again to continue.");
 }
