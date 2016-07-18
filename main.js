@@ -52,15 +52,20 @@ d3.select("#main-canvas")
     .on("touchmove", touchMove)
     .on("touchend", touchEnd);
 
+alertify.defaults.glossary.title = 'You lose';
+alertify.defaults.transition = "slide";
+alertify.defaults.theme.ok = "btn btn-primary";
+alertify.defaults.theme.cancel = "btn btn-danger";
+
 //Adds a new circle, initial placement is outside the radius of the user starting position
 function addNewCircle(){
-    var randomX = d3.randomUniform(150, canvasWidth)();
-    var randomY = d3.randomUniform(150, canvasHeight)();
+    var randomX = d3.randomUniform(sizeOfUserFigure, canvasWidth)();
+    var randomY = d3.randomUniform(sizeOfUserFigure, canvasHeight)();
     var circleItem = circleContainer.append("circle")
         .attr("class", "circleNode")
         .attr("cx", randomX)
         .attr("cy", randomY)
-        .attr("r", 40)
+        .attr("r", sizeOfCircleMin)
         .attr("fill", randomColor);
 }
 
@@ -147,7 +152,7 @@ function setTransitionOffCanvas(){
         .duration(100)
         .attr("cx", canvasWidth)
         .attr("cy", canvasHeight)
-        .attr("r", 5)
+        .attr("r", sizeOfCircleMin)
         .attr("fill", randomColor);
     });
 }
@@ -183,8 +188,8 @@ function detectCollision(d3timer, elapsed){
             var distance = Math.sqrt(dx * dx + dy * dy);
             if(distance < userRadius[i] + currentRadius[h]){
                 var numFormatter = d3.format(".1f");
-                alertify.warning('Collision detected with circle ' + h + ' after ' + moveNumber + ' direction changes and ' + numFormatter(elapsed/1000) + ' seconds.');
-                alertify.error('You lose with ' + currentX.length + ' balls on the board');
+                alertify.notify('Last collision detected with circle ' + (h + 1) + ' after ' + moveNumber + ' direction changes, ' + numFormatter(elapsed/1000) + ' seconds and ' + currentX.length +  ' balls on the board.  Touch to clear.', 'collision', 0);
+                alertify.alert('You lost with ' + currentX.length + ' balls on the board');
                 setTransitionOffCanvas();
                 moveNumber = 0;
                 gameOver = 1;
