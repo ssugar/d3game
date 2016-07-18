@@ -6,6 +6,7 @@ var canvasHeight = h - canvasMargin*2;
 
 var gameOver = 0;
 var moveNumber = 0;
+var startingNumOfCircles = 10;
 
 var redrawCanvasInterval = 50;
 var transitionObjectInterval = 5000;
@@ -36,7 +37,19 @@ function addNewCircle(){
         .attr("fill", randomColor);
 }
 
-for(i = 0; i < 10; i++)
+function removeExtraCircles(){
+    circleBinding = circleContainer.selectAll(".circleNode");
+    var loopCounter = 0;
+    circleBinding.each(function(d) {
+        if(loopCounter >= startingNumOfCircles){
+            var node = d3.select(this);
+            node.remove();
+        }
+        loopCounter = loopCounter + 1;
+    });
+}
+
+for(i = 0; i < startingNumOfCircles; i++)
 {
     addNewCircle();
 }
@@ -76,6 +89,7 @@ function clearCanvas(context){
 }
 
 function setTransitionOffCanvas(){
+    circleBinding = circleContainer.selectAll(".circleNode");
     circleBinding.each(function(d) {
         var node = d3.select(this);
         node.transition()
@@ -96,6 +110,7 @@ function detectCollision(d3timer, elapsed){
     var userY = [];
     var userColor = [];
     var userRadius = [];
+    circleBinding = circleContainer.selectAll(".circleNode");
     circleBinding.each(function(d) {
         node = d3.select(this);
         currentX.push(Math.round(node.attr("cx")));
@@ -119,6 +134,7 @@ function detectCollision(d3timer, elapsed){
                 var numFormatter = d3.format(".1f");
                 alertify.warning('Collision detected with circle ' + h + ' after ' + moveNumber + ' direction changes and ' + numFormatter(elapsed/1000) + ' seconds.');
                 alertify.error('You lose.');
+                removeExtraCircles();
                 setTransitionOffCanvas();
                 moveNumber = 0;
                 gameOver = 1;
@@ -132,6 +148,7 @@ function detectCollision(d3timer, elapsed){
 
 function setTransition(){
     if(takeAction == takeActionThreshold) {
+        circleBinding = circleContainer.selectAll(".circleNode");
         circleBinding.each(function(d) {
             var node = d3.select(this);
             var randomX = d3.randomUniform(0, canvasWidth)();
@@ -146,6 +163,7 @@ function setTransition(){
         });
         moveNumber = moveNumber + 1;
         takeAction = 0;
+        addNewCircle();
     }
     else{
         takeAction = takeAction + 1;
