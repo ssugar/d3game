@@ -49,6 +49,7 @@ var circleBinding = circleContainer.selectAll(".circleNode");
 var userBinding = circleContainer.selectAll(".userCircleNode");
 
 function drawCanvas(circleBinding, context){
+    circleBinding = circleContainer.selectAll(".circleNode");
     circleBinding.each(function(d) {
         var node = d3.select(this);
         context.fillStyle = node.attr("fill");
@@ -109,15 +110,16 @@ function detectCollision(d3timer, elapsed){
     })        
     for(i = 0; i < userX.length; i++) {
         for(h = 0; h < currentX.length; h++) {
-            if(userX[i] > (currentX[h] - currentRadius[h] - userRadius[i]/1.5) && userX[i] < (currentX[h] + currentRadius[h] + userRadius[i]/1.5)){
-                if(userY[i] > (currentY[h] - currentRadius[h] - userRadius[i]/1.5) && userY[i] < (currentY[h] + currentRadius[h] + userRadius[i]/1.5)){
-                    var numFormatter = d3.format(".1f");
-                    alert('Collision detected at pos: ' + userX[i] + ', ' + userY[i] + ' with circle ' + h + ' at: ' + currentX[h] + ', ' + currentY[h] + ' after ' + moveNumber + ' direction changes and ' + numFormatter(elapsed/1000) + ' seconds.  You lose.');
-                    setTransitionOffCanvas();
-                    gameOver = 1;
-                    d3timer.stop();
-                    return true;
-                }
+            var dx = userX[i] - currentX[h]; 
+            var dy = userY[i] - currentY[h];
+            var distance = Math.sqrt(dx * dx + dy * dy);
+            if(distance < userRadius[i] + currentRadius[h]){
+                var numFormatter = d3.format(".1f");
+                alert('Collision detected at pos: ' + userX[i] + ', ' + userY[i] + ' with circle ' + h + ' at: ' + currentX[h] + ', ' + currentY[h] + ' after ' + moveNumber + ' direction changes and ' + numFormatter(elapsed/1000) + ' seconds.  You lose.');
+                setTransitionOffCanvas();
+                gameOver = 1;
+                d3timer.stop();
+                return true;
             }
         }
     }
