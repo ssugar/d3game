@@ -1,31 +1,58 @@
+
+//Size settings
 var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 var canvasMargin = 10;
 var canvasWidth = w - canvasMargin*2;
 var canvasHeight = h - canvasMargin*2;
 
-var gameOver = 0;
-var moveNumber = 0;
-var startingNumOfCircles = 10;
-
+//Animation and transition settings
 var redrawCanvasInterval = 50;
 var transitionObjectInterval = 5000;
 var takeAction = 0;
 var takeActionThreshold = 250;
 
+//Game Flags and Settings
+var gameOver = 0;
+var moveNumber = 0;
+var startingNumOfCircles = 10;
+var sizeOfUserFigure = 100;
+var sizeOfCircleMin = 10;
+var sizeOfCircleMax = 80;
+
+//Adding the canvas and creating context
 var canvas = d3.select("body").append("canvas")
     .attr("id", "main-canvas")
     .attr("height", canvasHeight)
     .attr("width", canvasWidth);
-
 var context = canvas.node().getContext("2d")
 
-var detachedContainer = document.createElement("custom");
-var circleContainer = d3.select(detachedContainer);
+//Building a container to hold our user figure and circle settings
+var circleHolder = document.createElement("custom");
+var circleContainer = d3.select(circleHolder);
+for(i = 0; i < startingNumOfCircles; i++) {
+    addNewCircle();
+}
+var userFigure = circleContainer.append("circle")
+    .attr("class", "userCircleNode")
+    .attr("id", "userCircle")
+    .attr("r", sizeOfUserFigure)
+    .attr("fill", "black");
 
-var userContainer = document.createElement("custom");
-var userCircleCont = d3.select(userContainer);
+//Selecting the user figure and the circles 
+var userBinding = circleContainer.selectAll(".userCircleNode");
+var circleBinding = circleContainer.selectAll(".circleNode");
 
+//Starting the animation
+runTimer();
+
+//Adding touch controls to the canvas
+d3.select("#main-canvas")
+    .on("touchstart", touchStart)
+    .on("touchmove", touchMove)
+    .on("touchend", touchEnd);
+
+//Adds a new circle, initial placement is outside the radius of the user starting position
 function addNewCircle(){
     var randomX = d3.randomUniform(150, canvasWidth)();
     var randomY = d3.randomUniform(150, canvasHeight)();
@@ -37,6 +64,7 @@ function addNewCircle(){
         .attr("fill", randomColor);
 }
 
+//Removes all circles except the starting circles
 function removeExtraCircles(){
     circleBinding = circleContainer.selectAll(".circleNode");
     var loopCounter = 0;
@@ -49,21 +77,23 @@ function removeExtraCircles(){
     });
 }
 
-for(i = 0; i < startingNumOfCircles; i++)
-{
-    addNewCircle();
+function runTimer(){
+    var d3timer = d3.timer(function(elapsed) {
+        clearCanvas(context)
+        setTransition();
+        detectCollision(d3timer, elapsed);
+        drawCanvas(circleBinding, context);
+    }, redrawCanvasInterval);
 }
 
-var userItem = circleContainer.append("circle")
-    .attr("class", "userCircleNode")
-    .attr("id", "userCircle")
-    .attr("r", 100)
-    .attr("fill", "black");
-
-var circleBinding = circleContainer.selectAll(".circleNode");
-var userBinding = circleContainer.selectAll(".userCircleNode");
+//Clear the canvas so it can be redrawn
+function clearCanvas(context){
+    context.beginPath();
+    context.clearRect(0, 0, canvasWidth, canvasHeight);
+}
 
 function drawCanvas(circleBinding, context){
+    //reselect all circles as more may have been added.    
     circleBinding = circleContainer.selectAll(".circleNode");
     circleBinding.each(function(d) {
         var node = d3.select(this);
@@ -83,11 +113,32 @@ function drawCanvas(circleBinding, context){
     });
 }
 
-function clearCanvas(context){
-    context.beginPath();
-    context.clearRect(0, 0, canvasWidth, canvasHeight);
+//tell each circle where to move to and what color to change to next
+function setTransition(){
+    if(takeAction == takeActionThreshold) {
+        circleBinding = circleContainer.selectAll(".circleNode");
+        circleBinding.each(function(d) {
+            var node = d3.select(this);
+            var randomX = d3.randomUniform(0, canvasWidth)();
+            var randomY = d3.randomUniform(0, canvasHeight)();
+            var randomR = d3.randomUniform(sizeOfCircleMin, sizeOfCircleMax)();
+            node.transition()
+            .duration(transitionObjectInterval)
+            .attr("cx", randomX)
+            .attr("cy", randomY)
+            .attr("r", randomR)
+            .attr("fill", randomColor);
+        });
+        moveNumber = moveNumber + 1;
+        takeAction = 0;
+        addNewCircle();
+    }
+    else{
+        takeAction = takeAction + 1;
+    }
 }
 
+//move all circles off the canvas, called after user loses so they can re-start anywhere on the screen and not collide immediately.
 function setTransitionOffCanvas(){
     circleBinding = circleContainer.selectAll(".circleNode");
     circleBinding.each(function(d) {
@@ -133,8 +184,7 @@ function detectCollision(d3timer, elapsed){
             if(distance < userRadius[i] + currentRadius[h]){
                 var numFormatter = d3.format(".1f");
                 alertify.warning('Collision detected with circle ' + h + ' after ' + moveNumber + ' direction changes and ' + numFormatter(elapsed/1000) + ' seconds.');
-                alertify.error('You lose.');
-                removeExtraCircles();
+                alertify.error('You lose with ' + currentX.length + ' balls on the board');
                 setTransitionOffCanvas();
                 moveNumber = 0;
                 gameOver = 1;
@@ -145,52 +195,13 @@ function detectCollision(d3timer, elapsed){
     }
 }
 
-
-function setTransition(){
-    if(takeAction == takeActionThreshold) {
-        circleBinding = circleContainer.selectAll(".circleNode");
-        circleBinding.each(function(d) {
-            var node = d3.select(this);
-            var randomX = d3.randomUniform(0, canvasWidth)();
-            var randomY = d3.randomUniform(0, canvasHeight)();
-            var randomR = d3.randomUniform(10, 80)();
-            node.transition()
-            .duration(transitionObjectInterval)
-            .attr("cx", randomX)
-            .attr("cy", randomY)
-            .attr("r", randomR)
-            .attr("fill", randomColor);
-        });
-        moveNumber = moveNumber + 1;
-        takeAction = 0;
-        addNewCircle();
-    }
-    else{
-        takeAction = takeAction + 1;
-    }
-}
-
-function runTimer(){
-    var d3timer = d3.timer(function(elapsed) {
-        clearCanvas(context)
-        setTransition();
-        detectCollision(d3timer, elapsed);
-        drawCanvas(circleBinding, context);
-    }, redrawCanvasInterval);
-}
-
-runTimer();
-
-d3.select("#main-canvas")
-    .on("touchstart", touchStart)
-    .on("touchmove", touchMove)
-    .on("touchend", touchEnd);
-
-
+//Touch controls
 function touchStart() {
   d3.event.preventDefault();
   var d = d3.touches(this);
   if(gameOver == 1) { 
+      //clear the board and start again.
+      removeExtraCircles();
       runTimer();
       gameOver = 0;
   }
