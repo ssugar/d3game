@@ -1,6 +1,8 @@
-var canvasWidth = 800;
-var canvasHeight = 600;
+var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 var canvasMargin = 10;
+var canvasWidth = w - canvasMargin*2;
+var canvasHeight = h - canvasMargin*2;
 
 var gameOver = 0;
 var moveNumber = 0;
@@ -24,8 +26,8 @@ var userContainer = document.createElement("custom");
 var userCircleCont = d3.select(userContainer);
 
 function addNewCircle(){
-    var randomX = d3.randomUniform(150,790)();
-    var randomY = d3.randomUniform(150, 590)();
+    var randomX = d3.randomUniform(150, canvasWidth)();
+    var randomY = d3.randomUniform(150, canvasHeight)();
     var circleItem = circleContainer.append("circle")
         .attr("class", "circleNode")
         .attr("cx", randomX)
@@ -78,9 +80,9 @@ function setTransitionOffCanvas(){
         var node = d3.select(this);
         node.transition()
         .duration(100)
-        .attr("cx", 800)
-        .attr("cy", 600)
-        .attr("r", 40)
+        .attr("cx", canvasWidth)
+        .attr("cy", canvasHeight)
+        .attr("r", 5)
         .attr("fill", randomColor);
     });
 }
@@ -115,8 +117,10 @@ function detectCollision(d3timer, elapsed){
             var distance = Math.sqrt(dx * dx + dy * dy);
             if(distance < userRadius[i] + currentRadius[h]){
                 var numFormatter = d3.format(".1f");
-                alert('Collision detected at pos: ' + userX[i] + ', ' + userY[i] + ' with circle ' + h + ' at: ' + currentX[h] + ', ' + currentY[h] + ' after ' + moveNumber + ' direction changes and ' + numFormatter(elapsed/1000) + ' seconds.  You lose.');
+                alertify.warning('Collision detected with circle ' + h + ' after ' + moveNumber + ' direction changes and ' + numFormatter(elapsed/1000) + ' seconds.');
+                alertify.error('You lose.');
                 setTransitionOffCanvas();
+                moveNumber = 0;
                 gameOver = 1;
                 d3timer.stop();
                 return true;
@@ -130,12 +134,11 @@ function setTransition(){
     if(takeAction == takeActionThreshold) {
         circleBinding.each(function(d) {
             var node = d3.select(this);
-            var randomX = d3.randomUniform(0, 790)();
-            var randomY = d3.randomUniform(0, 590)();
+            var randomX = d3.randomUniform(0, canvasWidth)();
+            var randomY = d3.randomUniform(0, canvasHeight)();
             var randomR = d3.randomUniform(10, 80)();
             node.transition()
             .duration(transitionObjectInterval)
-            .ease("bounce")
             .attr("cx", randomX)
             .attr("cy", randomY)
             .attr("r", randomR)
