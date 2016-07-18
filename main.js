@@ -188,7 +188,10 @@ function detectCollision(d3timer, elapsed){
             var distance = Math.sqrt(dx * dx + dy * dy);
             if(distance < userRadius[i] + currentRadius[h]){
                 var numFormatter = d3.format(".1f");
-                alertify.notify('Last collision detected with circle ' + (h + 1) + ' after ' + moveNumber + ' direction changes, ' + numFormatter(elapsed/1000) + ' seconds and ' + currentX.length +  ' balls on the board.  Touch to clear.', 'collision', 0);
+                var notifyMessage = document.createElement("div");
+                var notifyHtml = 'Last collision detected with circle ' + (h + 1) + ' after ' + moveNumber + ' direction changes and ' + numFormatter(elapsed/1000) + ' seconds with ' + currentX.length +  ' balls on the board.<br/>Touch message to clear.';
+                notifyMessage.innerHTML = notifyHtml;
+                alertify.notify(notifyMessage, 'collision', 0);
                 alertify.alert('You lost with ' + currentX.length + ' balls on the board');
                 setTransitionOffCanvas();
                 moveNumber = 0;
