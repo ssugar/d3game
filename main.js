@@ -102,7 +102,10 @@ function drawCanvas(circleBinding, context){
     circleBinding = circleContainer.selectAll(".circleNode");
     circleBinding.each(function(d) {
         var node = d3.select(this);
-        context.fillStyle = node.attr("fill");
+        var grd = context.createRadialGradient(+node.attr("cx"), +node.attr("cy"), +node.attr("r")*1.15, +node.attr("cx") + +node.attr("r")/2, +node.attr("cy") - +node.attr("r")/2, +node.attr("r")/16);
+        grd.addColorStop(0, node.attr("fill"));
+        grd.addColorStop(1, "white");
+        context.fillStyle = grd;
         context.beginPath();
         context.arc(node.attr("cx"), node.attr("cy"), node.attr("r"), 0, 2 * Math.PI, true);
         context.fill();
@@ -110,7 +113,10 @@ function drawCanvas(circleBinding, context){
     });
     userBinding.each(function(d) {
         var node = d3.select(this);
-        context.fillStyle = node.attr("fill");
+        var grd = context.createRadialGradient(+node.attr("cx"), +node.attr("cy"), +node.attr("r")*1.15, +node.attr("cx") + +node.attr("r")/2, +node.attr("cy") - +node.attr("r")/2, +node.attr("r")/16);
+        grd.addColorStop(0, node.attr("fill"));
+        grd.addColorStop(1, "white");
+        context.fillStyle = grd;
         context.beginPath();
         context.arc(node.attr("cx"), node.attr("cy"), node.attr("r"), 0, 2 * Math.PI, true);
         context.fill();
